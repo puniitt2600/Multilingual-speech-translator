@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title> Speech Translator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            min-height: 100vh;
+            font-family:"Palatino Linotype","Book Antiqua",Georgia,serif;
+            background:linear-gradient(
+                    135deg,
+                    #fce7f3,
+                    #e8f4f8,
+                    #eee8f8
+                );
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            color: #51485f;
+        }
+        .app{
+            width: 100%;
+            max-width: 950px;
+            background: rgba(255, 255, 255, 0.90);
+            border-radius: 28px;
+            padding: 35px;
+            box-shadow: 0 20px 50px
+                rgba(90, 70, 110, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-family:"Palatino Linotype","Book Antiqua",Georgia,serif;
+            font-size: 40px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #6d5b95;
+            margin-bottom: 8px;
+        }
+        .header p {
+            font-family:Arial,sans-serif;
+            color: #8a8291;
+            font-size: 15px;
+        }
+        .language-section {margin-bottom: 25px;}
+        .language-section label {
+            display: block;
+            margin-bottom: 9px;
+            font-family:Arial, sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            color: #655777;
+        }
+        #targetLanguage {
+            width: 100%;
+            padding: 15px 18px;
+            border-radius: 15px;
+            border: 1px solid #dfd4e7;
+            background: #fff;
+            color: #51485f;
+            font-family:Arial,sans-serif;
+            font-size: 16px;
+            outline: none;
+            cursor: pointer;
+        }
+        #targetLanguage:focus {
+            border-color: #b9a4d4;
+            box-shadow:0 0 0 3px
+                rgba(185, 164, 212, 0.15);
+        }
+        .translation-area {
+            display: grid;
+            grid-template-columns:1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .box {
+            min-height: 220px;
+            padding: 22px;
+            border-radius: 22px;
+            background: #fff7fa;
+            border: 1px solid #f1dce7;
+            box-shadow:0 5px 18px
+                rgba(100, 70, 100, 0.05);
+        }
+        .translation-box {
+            background: #f4fbfd;
+            border-color: #d9edf2;
+        }
+        .box-title {
+            font-family:Arial,sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            color: #655777;
+            margin-bottom: 15px;
+        }
+        #englishText {
+            width: 100%;
+            min-height: 145px;
+            border: none;
+            outline: none;
+            resize: none;
+            background: transparent;
+            font-family:"Palatino Linotype","Book Antiqua",Georgia,serif;
+            font-size: 20px;
+            font-weight: 500;
+            color: #66566f;
+            line-height: 1.7;
+            letter-spacing: 0.3px;
+        }
+        #englishText::placeholder {
+            color: #b8a8ba;
+            font-family: "Palatino Linotype","Book Antiqua",Georgia,serif;
+            font-style: italic;
+            font-size: 17px;
+        }
+        #translationText {
+            width: 100%;
+            min-height: 145px;
+            font-family:"Palatino Linotype","Book Antiqua",Georgia,serif;
+            font-size: 21px;
+            font-weight: 600;
+            color: #536d7a;
+            line-height: 1.8;
+            letter-spacing: 0.3px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-y: auto;
+        }
+        .mic-area {
+            text-align: center;
+            margin: 15px 0 20px;
+        }
+        #micButton {
+            width: 78px;
+            height: 78px;
+            border: none;
+            border-radius: 50%;
+            background: #d8b4e2;
+            color: white;
+            font-size: 31px;
+            cursor: pointer;
+            box-shadow:0 8px 20px
+                rgba(130, 90, 150, 0.20);
+        }
+        #micButton:hover {
+            transform: scale(1.06);
+            background: #c9a5d6;
+        }
+        #micButton.listening {
+            background: #f3a6b6;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {   /*to create animations for the pulsing microphone effect */
+            0% {transform: scale(1);}
+            50% { transform: scale(1.08);}
+            100% { transform: scale(1);}
+        }
+        #status {
+            min-height: 22px;
+            margin-top: 12px;
+            font-family:Arial,sans-serif;
+            font-size: 14px;
+            color: #82768b;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 15px;
+        }
+        button.action {
+            border: none;
+            border-radius: 15px;
+            padding: 13px 23px;
+            font-family: Arial,sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition:transform 0.2s,box-shadow 0.2s;
+        }
+        button.action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px
+                rgba(80, 60, 90, 0.12);
+        }
+        #translateButton {
+            background: #c9b8ed;
+            color: #493c68;
+        }
+        #speakButton {
+            background: #a9dce7;
+            color: #315d68;
+        }
+        #clearButton {
+            background: #f4b8b3;
+            color: #6e3f3b;
+        }
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            font-family:Arial,sans-serif;
+            font-size: 12px;
+            color: #a095a6;
+        }
+         @media (max-width: 700px) { /* to make website responsive */
+            body {padding: 15px;}
+            .app {padding: 22px;border-radius: 22px;}    
+            .header h1 {font-size: 32px;}
+            .translation-area {grid-template-columns: 1fr;}
+            .box {min-height: 190px;}
+            #englishText,
+            #translationText {font-size: 18px;}
+        }
+    </style>
+</head>
+<!-- HTML -->
+<body>
+<div class="app">
+    <div class="header">
+        <h1>🌐 Speakly</h1>
+        <p> Your Speech Translator</p>
+    </div>
+    <div class="language-section">
+        <label for="targetLanguage">
+            🌍 Translate to
+        </label>
+        <select id="targetLanguage">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="ta">Tamil</option>
+            <option value="te">Telugu</option>
+            <option value="bn">Bengali</option>
+            <option value="mr">Marathi</option>
+            <option value="gu">Gujarati </option>
+            <option value="pa">Punjabi</option>
+            <option value="kn">Kannada </option>
+            <option value="ml">Malayalam</option>
+            <option value="fr">French</option>
+        </select>
+    </div>
+    <div class="translation-area">
+        <div class="box">
+            <div class="box-title"> Input Text</div>
+            <textarea
+                id="englishText"
+                placeholder=" Use microphone for input text..."
+            ></textarea>
+        </div>
+        <div class="box translation-box">
+            <div class="box-title">Translated text </div>
+            <div id="translationText">
+                Translation will appear here...
+            </div>
+        </div>
+    </div>
+    <div class="mic-area">
+        <button
+            id="micButton"
+            type="button"
+            title="Speak in English">
+            🎤
+        </button>
+        <div id="status">
+            Click the microphone to speak in English.
+        </div>
+    </div>
+    <div class="buttons">
+        <button
+            class="action"
+            id="translateButton"
+            type="button">
+            🔄 Translate
+        </button>
+        <button
+            class="action"
+            id="speakButton"
+            type="button">
+            🔊 Speak Translation
+        </button>
+        <button
+            class="action"
+            id="clearButton"
+            type="button">
+            🗑️ Clear
+        </button>
+    </div>
+    <div class="footer">
+        Speakly • Multilingual Speech Translator
+    </div>
+</div>
+<!-- JS  -->
+<script>    //const is used to create a variable and store the html element wth id to use it later
+const englishText =document.getElementById("englishText");
+const translationText =document.getElementById("translationText");
+const targetLanguage =document.getElementById("targetLanguage");
+const translateButton =document.getElementById("translateButton");
+const speakButton =document.getElementById("speakButton");
+const clearButton =document.getElementById("clearButton");
+const micButton =document.getElementById("micButton");
+const status =document.getElementById("status");
+
+const API_URL ="http://127.0.0.1:8000";
+console.log("Speakly loaded.");  //show at console
+console.log("English text:",englishText);
+console.log("Target language:",targetLanguage);
+console.log("Translate button:",translateButton);
+console.log("Microphone:",micButton);
+
+// MICROPHONE
+const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+let recognition = null;
+if (!SpeechRecognition) {
+    micButton.disabled = true;
+    status.innerText ="❌ Speech recognition is not supported by this browser.";
+} else {
+    recognition =new SpeechRecognition();
+    recognition.continuous =false;
+    recognition.interimResults =false;
+    // The user speaks English
+    recognition.lang ="en-US";
+    micButton.addEventListener("click",function () {
+            console.log("Microphone button clicked");
+            status.innerText ="🎤 Listening... Speak now.";
+            try {recognition.start();
+            } catch (error) {
+                console.error("Microphone start error:",error
+                );
+            }
+        }
+    );
+// MIC START
+    recognition.onstart =function () {
+            console.log("Microphone started");
+            micButton.innerText ="🔴";
+            micButton.classList.add("listening");
+            status.innerText ="🎤 Listening... Speak now.";
+        };
+    // SPEECH RESULT
+    recognition.onresult =function (event) {
+            const text = event.results[0][0].transcript;
+            console.log("Speech:",text);
+            englishText.value =text;
+            status.innerText ="✅ Speech captured. Click Translate.";
+        };
+    // MIC ERROR
+    recognition.onerror =function (event) {
+            console.error("Speech recognition error:",event.error);
+            if (event.error ==="not-allowed") {
+                status.innerText ="❌ Microphone permission denied.";
+            } else if (event.error ==="no-speech") {
+                status.innerText =" No speech detected. Try again.";
+            } else {
+                status.innerText ="❌ Microphone error: " +event.error;
+            }
+        };
+    // MIC END
+    recognition.onend =function () {
+            micButton.innerText = "🎤";
+            micButton.classList.remove("listening");
+        };
+}
+// TRANSLATE BUTTON
+translateButton.addEventListener("click",async function () {
+        const text =englishText.value.trim();
+        const language =targetLanguage.value;                     // language value hi
+        console.log("Text:",text);
+        console.log( "Target language:", language);
+        // EMPTY TEXT
+        if (!text) {
+            status.innerText = " Please speak some text first.";
+            return;
+        }
+        // LOADING
+        status.innerText = "🔄 Translating...";
+        translateButton.disabled =true;
+        try {
+            console.log("Sending request to:",API_URL + "/translate");
+            // SEND REQUEST
+            const response =await fetch(API_URL + "/translate",{
+                        method: "POST",
+                        headers: {"Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({
+                            text: text,target_language: language
+                        })
+                    }
+                );
+            console.log("Response status:",response.status);
+            // READ RESPONSE
+            const data =await response.json();
+            console.log("Backend response:",data);
+            // ERROR
+            if (!response.ok) {
+                throw new Error(data.detail ||"Translation failed");
+            }
+            // SHOW TRANSLATION
+            translationText.innerText =data.translated_text;
+            status.innerText ="✅ Translation completed!";
+        } catch (error) {
+            console.error("Translation error:",error);
+            status.innerText ="❌ Translation failed: " +error.message;
+        } finally {translateButton.disabled =false;}
+    }
+);
+// SPEAK TRANSLATION
+let voices = [];
+// Load available voices
+function loadVoices() {
+    voices = window.speechSynthesis.getVoices();
+    console.log("Available voices:", voices);
+}
+loadVoices();
+window.speechSynthesis.onvoiceschanged = function () {loadVoices();};
+speakButton.addEventListener("click", function () {
+    const text = translationText.innerText.trim();
+    const language = targetLanguage.value;
+    console.log("Text to speak:", text);
+    console.log("Selected language:", language);
+    if (!text || text === "Translation will appear here...") {
+        status.innerText = "Please translate something first.";
+        return;
+    }
+    // STOP SPEAKING
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        speakButton.innerText = "🔊 Speak Translation";
+        status.innerText = "Speech stopped.";
+        return;
+    }
+    // Language codes
+    const languageCodes = {
+        "en": "en-US",
+        "hi": "hi-IN",
+        "ta": "ta-IN",
+        "te": "te-IN",
+        "bn": "bn-IN",
+        "mr": "mr-IN",
+        "gu": "gu-IN",
+        "pa": "pa-IN",
+        "kn": "kn-IN",
+        "ml": "ml-IN",
+        "fr": "fr-FR"
+    };
+    const selectedLanguage = languageCodes[language] || "en-US";
+    console.log("Speech language:", selectedLanguage);
+    // Get latest voices
+    voices = window.speechSynthesis.getVoices();
+    // Find exact language voice
+    let selectedVoice = voices.find(function (voice) {
+        return voice.lang.toLowerCase() === selectedLanguage.toLowerCase();
+    });
+    // If exact voice isn't found,
+    // find voice with same language
+    if (!selectedVoice) {
+        const languagePrefix = selectedLanguage.split("-")[0].toLowerCase();
+        selectedVoice = voices.find(function (voice) {
+            return voice.lang .toLowerCase().startsWith(languagePrefix);
+        });
+    }
+    console.log("Selected voice:", selectedVoice);
+    // No voice found
+    if (!selectedVoice) {
+        status.innerText ="❌ No voice available for " + selectedLanguage;
+        console.error("No voice found for:",selectedLanguage);
+        return;
+    }
+    // Create speech
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.voice = selectedVoice;
+    speech.lang = selectedVoice.lang;
+    speech.rate = 0.9;
+    speech.pitch = 1;
+    speech.volume = 1;
+    console.log("Voice name:", selectedVoice.name);
+    console.log("Voice language:", selectedVoice.lang);
+    console.log("Voice URI:", selectedVoice.voiceURI);
+    speech.onstart = function () {
+        console.log("Speech started");
+        status.innerText ="🔊 Speaking translation...";
+        speakButton.innerText ="⏹️ Stop Speaking";
+    };
+    speech.onend = function () {
+        console.log("Speech ended");
+        status.innerText ="✅ Speech completed.";
+        speakButton.innerText ="🔊 Speak Translation";
+    };
+    speech.onerror = function (event) {
+        console.error("Speech synthesis error:", event.error
+        );
+        status.innerText ="❌ Speech error: " + event.error;
+        speakButton.innerText ="🔊 Speak Translation";
+    };
+    // Start speech
+    window.speechSynthesis.speak(speech);
+});
+// CLEAR BUTTON
+clearButton.addEventListener("click",function () {
+        englishText.value ="";
+        translationText.innerText ="Translation will appear here...";
+        status.innerText ="Cleared. Ready for new text.";
+    }
+);
+console.log("All Speakly functions initialized.");
+</script>
+</body>
+</html>
